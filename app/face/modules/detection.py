@@ -10,7 +10,8 @@ from ..helpers import image_helpers
 
 
 def extract_embeddings_and_facial_areas(
-        img_path: Union[str, np.ndarray]
+        img_path: Union[str, np.ndarray],
+        align: bool
 ):
     embeddings = []
     facial_areas = []

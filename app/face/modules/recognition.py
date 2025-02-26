@@ -20,7 +20,8 @@ def find(
     source_objs = detection.extract_faces(img_path)
     for source_obj in source_objs:
         img_embeds, facial_areas = detection.extract_embeddings_and_facial_areas(
-            source_obj["img"]
+            source_obj["img"],
+            align = False
         )
 
         for img_embed, facial_area in zip(img_embeds, facial_areas):
