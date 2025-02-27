@@ -92,13 +92,14 @@ def extract_sub_img(img: np.ndarray,
 def align_img_with_eyes(img: np.ndarray,
                         left_eye: Tuple[int, int],
                         right_eye: Tuple[int, int]):
+    
     angle = float(np.degrees(
         np.arctan2(
             left_eye[1] - right_eye[1],
             left_eye[0] - right_eye[0]
         )
     ))
-    
+
     (h, w) = img.shape[:2]
     center = (w // 2, h // 2)
     M = cv2.getRotationMatrix2D(center = center,

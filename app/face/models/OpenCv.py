@@ -105,4 +105,4 @@ class OpenCvClient(Detector):
     def __get_opencv_path(self) -> str:
         return os.path.join(os.path.dirname(cv2.__file__), "data")
 
-opencv_client = OpenCvClient()
+# opencv_client = OpenCvClient()

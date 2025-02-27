@@ -22,9 +22,9 @@ def download_weights_if_necessary(
 ) -> str:
     home = folder_helpers.get_home()
     
-    target_file = os.path.normpath(os.path.join(home, "face_recognition", "weights", file_name))
+    target_file = os.path.normpath(os.path.join(home, "app", "face", "weights", file_name))
     if os.path.isfile(target_file):
-        logger.debug(f"{file_name} is already available at {target_file}")
+        print(f"{file_name} is already available at {target_file}")
         return target_file
 
     if compress_type is not None and compress_type not in ALLOWED_COMPRESS_TYPES:

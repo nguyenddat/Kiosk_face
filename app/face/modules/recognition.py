@@ -8,34 +8,32 @@ def find(
         img_path: Union[str, np.ndarray],
         data: dict,
         distance_metric: str = "cosine",
-        threshold: Optional[float] = None
+        threshold: Optional[float] = 0.3
 ):
-    X, y, X_norm = data["X"], data["y"], data["X_norm"]
+    X, y = data["X"], data["y"]
 
-    if len(X) == 0 or len(y) == 0 or len(X_norm) == 0:
+    if len(X) == 0 or len(y) == 0:
         return []
     # -----------------------------------------------------------
     resp_objs = []
 
-    source_objs = detection.extract_faces(img_path)
-    for source_obj in source_objs:
-        img_embeds, facial_areas = detection.extract_embeddings_and_facial_areas(
-            source_obj["img"],
-            align = False
+    img_embeds, facial_areas = detection.extract_embeddings_and_facial_areas(
+        img_path = img_path,
+        align = False
+    )
+
+    for img_embed, facial_area in zip(img_embeds, facial_areas):
+        resp_obj = verification.recognize(
+            img = img_embed,
+            data = data,
+            threshold = threshold,
+            distance_metric = distance_metric
         )
 
-        for img_embed, facial_area in zip(img_embeds, facial_areas):
-            resp_obj = verification.recognize(
-                img = img_embed,
-                data = data,
-                threshold = threshold,
-                distance_metric = distance_metric
-            )
-
-            resp_objs.append({
-                "prediction": resp_obj,
-                "facial_area": facial_area
-            })
+        resp_objs.append({
+            "prediction": resp_obj,
+            "facial_area": facial_area
+        })
     
     return resp_objs
     

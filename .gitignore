@@ -1,5 +1,9 @@
 .env
 
 **/__pycache__/
-
 **/**/__pycache__/
+
+app/data/**.pkl
+app/data/**/**/.pkl
+
+app/face/weights/**.h5

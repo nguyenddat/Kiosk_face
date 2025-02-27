@@ -2,7 +2,7 @@ from typing import *
 
 import numpy as  np
 
-from ..helpers import package_helpers, weight_helpers, model_helpers
+from ..helpers import package_helpers, weights_helpers, model_helpers
 from ..schemas.FacialRecognition import FacialRecogition
 
 tf_version = package_helpers.get_tf_major_version()
@@ -31,11 +31,11 @@ class VGGFaceClient(FacialRecogition):
     
     def load_model(self, url = WEIGHTS_URL) -> Model:
         model = self.base_model()
-        weight_file = weight_helpers.download_weights_if_necessary(
+        weight_file = weights_helpers.download_weights_if_necessary(
             file_name = "vgg_face_weights.h5", source_url=url
         )
         
-        model = weight_helpers.load_model_weights(model = model, weight_file = weight_file)
+        model = weights_helpers.load_model_weights(model = model, weight_file = weight_file)
 
         base_model_output = Flatten()(model.layers[-5].output)
         

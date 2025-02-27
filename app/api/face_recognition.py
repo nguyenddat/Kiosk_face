@@ -1,12 +1,9 @@
-import os
-import time
-import shutil
 from typing import *
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, status, WebSocketException
 
 from face.face import face_model
-
+from schemas.face_recognition import RecogniseDataRequest
 
 router = APIRouter()
 
@@ -30,16 +27,16 @@ def add_data(data):
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, err)
 
 @router.post("/api/face-recognition/recognise")
-def face_recognition(data):
+def face_recognition(data: RecogniseDataRequest):
     if not data:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Không có dữ liệu")
     
-    try:
-        pred = face_model.find(
-            img_path = data
-        )
+    # try:
+    pred = face_model.find(
+        img_path = data.img
+    )
 
-        return pred
+    return pred
 
-    except Exception as err:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, err)
+    # except Exception as err:
+    #     raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, err)

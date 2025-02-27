@@ -14,7 +14,7 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    application.include_router(face_recognition.router, tags = ["weeklySchedule"])
+    application.include_router(face_recognition.router)
     return application
 
 

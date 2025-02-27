@@ -5,8 +5,6 @@ from typing import *
 import numpy as np
 
 from .modules import recognition, detection
-from .models.OpenCv import opencv_client
-from .models.VGGFace import vggface_model
 from .helpers import folder_helpers, image_helpers
 
 class Face:
@@ -20,7 +18,7 @@ class Face:
             with open(self.stored_data_path, "rb") as file:
                 return pickle.load(file)
             
-        data = {"X": [], "y": [], "X_norm": []}
+        data = {"X": [], "y": []}
         for dir in os.scandir(self.data_path):
             if dir.is_dir():
                 backup_file_path = os.path.join(dir.path, "backup.pkl")
@@ -28,36 +26,35 @@ class Face:
                 try:
                     backup_data = folder_helpers.load_file(backup_file_path)
                     X = backup_data["X"]
-                    X_norm = backup_data["X_norm"]
                     y = [dir.name] * len(X)
 
-                    data["X"].extend(X)
-                    data["y"].extend(y)
-                    data["X_norm"].extend(X_norm)
+                    data["X"] += X
+                    data["y"] += y
 
                 except:
-                    X = []
+                    X, y = [], []
                     for file in os.listdir(dir.path):
                         if file.endswith(".jpg"):
                             img_path = os.path.join(dir.path, file)
-                            X, _ = detection.extract_embeddings_and_facial_areas(
-                                img_path = img_path
-                            )
+                            embed, _ = detection.extract_embeddings_and_facial_areas(
+                                img_path = img_path,
+                                align = True)
 
-                            X_norm = [np.linalg.norm(embed) for embed in X]
-                            y = [dir.name] * len(X)
+                            label = [dir.name] * len(embed)
 
-                            data["X"].extend(X)
-                            data["y"].extend(y)
-                            data["X_norm"].extend(X_norm)
+                            X += embed
+                            y += label
+                    
+                    data["X"] += X
+                    data["y"] += y
                     
                     folder_helpers.save_file(
                         objs = {
-                            "X": X,
-                            "X_norm": X_norm
+                            "X": X
                         },
                         file_path = os.path.join(dir.path, "backup.pkl")
                     )
+
 
         folder_helpers.save_file(
             objs = data,
@@ -107,7 +104,7 @@ class Face:
     def find(self,
         img_path: Union[str, np.ndarray],
         distance_metric: str = "cosine",
-        threshold: Optional[float] = None
+        threshold: Optional[float] = 0.3
     ):
         return recognition.find(
             img_path = img_path,
