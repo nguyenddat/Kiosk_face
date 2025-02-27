@@ -1,11 +1,12 @@
 import os
+import shutil
 import pickle
 from typing import *
 
 import numpy as np
 
 from .modules import recognition, detection
-from .helpers import folder_helpers, image_helpers
+from .helpers import folder_helpers
 
 class Face:
     def __init__(self):
@@ -66,6 +67,10 @@ class Face:
     def add_data(self, label, imgs):
         data = {"X": [], "X_norm": []}
         save_dir = os.path.join(self.data_path, label)
+
+        if os.path.exists(save_dir):
+            self.delete_data(label)
+
         backup_file = os.path.join(save_dir, "backup.pkl")
         os.makedirs(save_dir, exist_ok = True)
 
@@ -80,23 +85,21 @@ class Face:
                 continue
 
             data["X"].append(embeds)
-            data["X_norm"].append(np.linalg.norm(embeds))
         
         folder_helpers.save_file(objs = data, file_path = backup_file)
         self.data["X"].extend(data["X"])
-        self.data["X_norm"].extend(data["X_norm"])
         self.data["y"].extend([label] * len(data["X"]))
         
         folder_helpers.save_file(self.data, self.stored_data_path)
 
     def delete_data(self, label):
         save_dir = os.path.join(self.data_path, label)
-        
+        shutil.rmtree(save_dir)
+
         y_array = np.array(self.data["y"])
         idx_to_keep = np.where(y_array != label)[0].tolist()
         
         self.data["X"] = [self.data["X"][i] for i in idx_to_keep]
-        self.data["X_norm"] = [self.data["X_norm"][i] for i in idx_to_keep]
         self.data["y"] = [self.data["y"][i] for i in idx_to_keep]
 
         folder_helpers.save_file(self.data, self.stored_data_path)

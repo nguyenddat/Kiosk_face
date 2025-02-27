@@ -1,0 +1,14 @@
+services:
+  app:
+    container_name: kiosk_face
+    build:
+      context: ./
+    ports:
+      - "9991:8000"
+    restart: unless-stopped
+    networks:
+      - fast_api
+
+networks:
+  fast_api:
+    driver: bridge
