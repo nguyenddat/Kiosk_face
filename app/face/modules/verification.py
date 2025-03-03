@@ -2,7 +2,7 @@ from typing import *
 
 import numpy as np
 
-from ..helpers import model_helpers
+from face.helpers import model_helpers
 
 def recognize(
         img: np.ndarray,

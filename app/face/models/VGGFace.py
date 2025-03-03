@@ -2,8 +2,8 @@ from typing import *
 
 import numpy as  np
 
-from ..helpers import package_helpers, weights_helpers, model_helpers
-from ..schemas.FacialRecognition import FacialRecogition
+from face.helpers import package_helpers, weights_helpers, model_helpers
+from face.schemas.FacialRecognition import FacialRecogition
 
 tf_version = package_helpers.get_tf_major_version()
 if tf_version == 1:

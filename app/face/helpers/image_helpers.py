@@ -80,11 +80,9 @@ def load_image_from_base64(uri: str) -> np.ndarray:
     img_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     return img_bgr
 
-def yield_image(path: str) -> Generator[str, None, None]:
-    for r, _, f in os.walk(path):
-        for file in f:
-            if os.path.splitext(file)[1].lower() in IMAGE_EXTS:
-                exact_path = os.path.join(r, file)
-                with Image.open(exact_path) as img:
-                    if img.format.lower() in PIL_EXTS:
-                        yield exact_path
+
+def base64_to_png(b64, file_path):
+    img_data = base64.b64decode(b64)
+    with open(file_path, "wb") as f:
+        f.write(img_data)
+    print(f"Ảnh đã được lưu tại: {file_path}")

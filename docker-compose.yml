@@ -1,6 +1,7 @@
 services:
   app:
     container_name: kiosk_face
+    image: kiosk_face
     build:
       context: ./
     ports:

@@ -6,7 +6,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, st
 
 from face.face import face_model
 from schemas.face_recognition import RecogniseDataRequest
-from ..services.ConnectionManager import connection_manager
+from services.ConnectionManager import connection_manager
 
 router = APIRouter()
 

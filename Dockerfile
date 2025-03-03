@@ -16,4 +16,5 @@ WORKDIR /kiosk_face
 COPY . /kiosk_face/
 RUN pip install -r requirements.txt
 
-RUN python app/main.py
+# RUN python app/main.py
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000","--reload"]

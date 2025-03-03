@@ -2,7 +2,7 @@ from typing import *
 
 import numpy as np
 
-from . import detection, verification
+from face.modules import detection, verification
 
 def find(
         img_path: Union[str, np.ndarray],

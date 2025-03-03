@@ -1,6 +1,6 @@
 from insightface.app import FaceAnalysis
 
-from ..schemas.Detector import *
+from face.schemas.Detector import *
 
 class InsightFaceClient(Detector):
     def __init__(self):

@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 
 from . import preprocessing, representation
 # from ..models.OpenCv import opencv_client
-from ..models.InsightFace import insightface_client
-from ..schemas.Detector import *
-from ..helpers import image_helpers
+from face.models.InsightFace import insightface_client
+from face.schemas.Detector import *
+from face.helpers import image_helpers
 
 
 def extract_embeddings_and_facial_areas(
@@ -21,12 +21,6 @@ def extract_embeddings_and_facial_areas(
     resp_objs = extract_faces(img_path = img_path, align = align)
     for resp_obj in resp_objs:
         current_img = resp_obj["img"]
-        img = (current_img * 255).astype(np.uint8)
-        plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-        plt.title(f"Face")
-        plt.axis("off")
-        plt.show()
-
         img_embed = representation.represent(img = current_img)
         embeddings.append(img_embed)
         facial_areas.append(resp_obj["facial_area"])

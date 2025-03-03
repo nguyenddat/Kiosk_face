@@ -3,7 +3,7 @@ from typing import *
 
 import numpy as np
 
-from ..helpers import package_helpers
+from face.helpers import package_helpers
 
 tf_version = package_helpers.get_tf_major_version()
 if tf_version == 2:

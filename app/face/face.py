@@ -4,9 +4,11 @@ import pickle
 from typing import *
 
 import numpy as np
+from tqdm import tqdm
 
-from .modules import recognition, detection
-from .helpers import folder_helpers
+from face.modules import recognition, detection
+from face.helpers.folder_helpers import load_file, save_file
+from face.helpers.image_helpers import base64_to_png
 
 class Face:
     def __init__(self):
@@ -14,95 +16,6 @@ class Face:
         self.stored_data_path = os.path.join(self.data_path, "data.pkl")
         self.data = self.load_data()
 
-    def load_data(self):
-        if os.path.isfile(self.stored_data_path):
-            with open(self.stored_data_path, "rb") as file:
-                return pickle.load(file)
-            
-        data = {"X": [], "y": []}
-        for dir in os.scandir(self.data_path):
-            if dir.is_dir():
-                backup_file_path = os.path.join(dir.path, "backup.pkl")
-                
-                try:
-                    backup_data = folder_helpers.load_file(backup_file_path)
-                    X = backup_data["X"]
-                    y = [dir.name] * len(X)
-
-                    data["X"] += X
-                    data["y"] += y
-
-                except:
-                    X, y = [], []
-                    for file in os.listdir(dir.path):
-                        if file.endswith(".jpg"):
-                            img_path = os.path.join(dir.path, file)
-                            embed, _ = detection.extract_embeddings_and_facial_areas(
-                                img_path = img_path,
-                                align = True)
-
-                            label = [dir.name] * len(embed)
-
-                            X += embed
-                            y += label
-                    
-                    data["X"] += X
-                    data["y"] += y
-                    
-                    folder_helpers.save_file(
-                        objs = {
-                            "X": X
-                        },
-                        file_path = os.path.join(dir.path, "backup.pkl")
-                    )
-
-
-        folder_helpers.save_file(
-            objs = data,
-            file_path = self.stored_data_path
-        )
-
-        return data
-    
-    def add_data(self, label, imgs):
-        data = {"X": [], "X_norm": []}
-        save_dir = os.path.join(self.data_path, label)
-
-        if os.path.exists(save_dir):
-            self.delete_data(label)
-
-        backup_file = os.path.join(save_dir, "backup.pkl")
-        os.makedirs(save_dir, exist_ok = True)
-
-        for img in imgs:
-            embeds, _ = detection.extract_embeddings_and_facial_areas(
-                img_path = img,
-                align = True
-            )
-
-            if len(embeds) != 1:
-                print(f"Ảnh không phù hợp để lưu dữ liệu")
-                continue
-
-            data["X"].append(embeds)
-        
-        folder_helpers.save_file(objs = data, file_path = backup_file)
-        self.data["X"].extend(data["X"])
-        self.data["y"].extend([label] * len(data["X"]))
-        
-        folder_helpers.save_file(self.data, self.stored_data_path)
-
-    def delete_data(self, label):
-        save_dir = os.path.join(self.data_path, label)
-        shutil.rmtree(save_dir)
-
-        y_array = np.array(self.data["y"])
-        idx_to_keep = np.where(y_array != label)[0].tolist()
-        
-        self.data["X"] = [self.data["X"][i] for i in idx_to_keep]
-        self.data["y"] = [self.data["y"][i] for i in idx_to_keep]
-
-        folder_helpers.save_file(self.data, self.stored_data_path)
 
     def find(self,
         img_path: Union[str, np.ndarray],
@@ -113,7 +26,96 @@ class Face:
             img_path = img_path,
             data = self.data,
             distance_metric = distance_metric,
-            threshold = threshold
-        )
+            threshold = threshold)
+
+
+    def extract_embeddings(self, img_path, align):
+        embeds, _ = detection.extract_embeddings_and_facial_areas(img_path, align)
+        return embeds
+
+
+    def load_data(self):
+        if os.path.isfile(self.stored_data_path):
+            return load_file(self.stored_data_path)
+        
+        # _____________________________________________________________________________
+        data = {"X": [], "y": []}
+        for dir in tqdm(os.scandir(self.data_path), desc = "Load các thư mục data ảnh"):
+            if not dir.is_dir():
+                continue
+            
+            backup_file = os.path.join(dir.path, "backup.pkl")
+            if os.path.isfile(backup_file):
+                X = load_file(backup_file)
+                data["X"].extend(X)
+                data["y"].extend([dir.name] * len(X))
+                continue
+            
+        # _____________________________________________________________________________
+            X = []
+            imgs = [file for file in os.listdir(dir.path) if file.endswith((".png", ".jpg"))]
+            if len(imgs) == 0:
+                self.delete_data(dir.name)
+                continue
+
+            for img in imgs:
+                embeds = self.extract_embeddings(
+                    os.path.join(dir.path, img),
+                    True 
+                )
+
+                X.extend(embeds)
+
+            data["X"].extend(X)
+            data["y"].extend([dir.name] * len(X))
+            save_file(X, backup_file)
+        
+        save_file(data, self.stored_data_path)
+        return data
+            
+    
+    def update_data(self, identity, imgs):
+        self.delete_data(identity)
+        self.add_data(identity, imgs)
+
+
+    def add_data(self, identity, imgs):
+        dir = os.path.join(self.data_path, identity)
+        os.makedirs(dir, exist_ok = True)
+
+        X_add = []
+        for idx, img in enumerate(imgs):
+            file_path = os.path.join(dir, f"{identity}_{idx}.png")
+            base64_to_png(img, file_path)
+
+            embeds = self.extract_embeddings(img, True)
+            X_add.extend(embeds)
+        
+        self.data["X"].extend(X_add)
+        self.data["y"].extend([identity] * len(X_add))
+        save_file(self.data, self.stored_data_path)
+        """
+        CODE CẬP NHẬT CƠ SỞ DỮ LIỆU
+        """
+
+
+    def delete_data(self, identity):
+        """"""
+        dir = os.path.join(self.data_path, identity)
+        if not os.path.exists(dir):
+            return 
+        
+        shutil.rmtree(dir)
+        X_new, y_new = [], []
+        for (x, y) in zip(self.data["X"], self.data["y"]):
+            if y != identity:
+                X_new.extend([x])
+                y_new.extend([y])
+        
+        self.data = {"X": X_new, "y": y_new}
+        """
+        CODE CẬP NHẬT CƠ SỞ DỮ LIỆU
+        """
+
 
 face_model = Face()
