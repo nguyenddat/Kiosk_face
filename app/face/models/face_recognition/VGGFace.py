@@ -90,4 +90,4 @@ class VGGFaceClient(FacialRecogition):
 
         return model        
 
-vggface_model = VGGFaceClient()
+# vggface_model = VGGFaceClient()

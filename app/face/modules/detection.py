@@ -5,8 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from . import preprocessing, representation
-# from ..models.OpenCv import opencv_client
-from face.models.InsightFace import insightface_client
+from app.face.models.face_detection.InsightFace import insightface_client
 from face.schemas.Detector import *
 from face.helpers import image_helpers
 
@@ -21,6 +20,10 @@ def extract_embeddings_and_facial_areas(
     resp_objs = extract_faces(img_path = img_path, align = align)
     for resp_obj in resp_objs:
         current_img = resp_obj["img"]
+        plt.imshow(current_img)
+        plt.axis("off")
+        plt.show()
+        
         img_embed = representation.represent(img = current_img)
         embeddings.append(img_embed)
         facial_areas.append(resp_obj["facial_area"])
